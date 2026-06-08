@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Django
+db.sqlite3
+*.log
+staticfiles/
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Storage (keep dirs, ignore contents)
+storage/xml/*
+storage/zip/*
+storage/cdr/*
+!storage/xml/.gitkeep
+!storage/zip/.gitkeep
+!storage/cdr/.gitkeep
+
+# Docker
+.docker/

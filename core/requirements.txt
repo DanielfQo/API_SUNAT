@@ -1,0 +1,29 @@
+# Core
+Django>=5.1,<6.0
+djangorestframework>=3.15,<4.0
+
+# Database
+psycopg2-binary>=2.9,<3.0
+
+# Environment
+python-decouple>=3.8,<4.0
+
+# Security
+cryptography>=43.0,<44.0
+
+# CORS
+django-cors-headers>=4.4,<5.0
+
+# Filtering
+django-filter>=24.0,<25.0
+
+# Server
+gunicorn>=22.0,<23.0
+
+# Templates
+jinja2>=3.1.2
+
+# SUNAT / Firma Digital
+signxml>=4.0,<5.0
+lxml>=4.9,<6.0
+zeep>=4.2,<5.0

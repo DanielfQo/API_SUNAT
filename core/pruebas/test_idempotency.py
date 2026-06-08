@@ -1,0 +1,129 @@
+import os
+import sys
+import django
+from unittest.mock import patch
+
+# Setup Django environment
+sys.path.append("c:/Users/danie/OneDrive/Documentos/api_sunat/core")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+django.setup()
+
+from django.conf import settings
+settings.ALLOWED_HOSTS.append("testserver")
+
+from rest_framework.test import APIClient
+from apps.companies.models import Company
+from apps.client_apps.models import ClientApp
+from apps.documents.models import ElectronicDocument
+from apps.requests_log.models import RequestLog
+
+def test_idempotency_flow():
+    print("\n=== Testing Document Idempotency Flow (Fase 7) ===")
+    
+    # Setup company and client app
+    company, _ = Company.objects.get_or_create(
+        ruc="20123456789",
+        defaults={"business_name": "Empresa Test SAC"}
+    )
+    client_app, _ = ClientApp.objects.get_or_create(
+        company=company,
+        name="Test App"
+    )
+    
+    # Ensure database is clean of our test documents
+    ElectronicDocument.objects.filter(company=company, series="F001", number=9999).delete()
+    ElectronicDocument.objects.filter(company=company, series="F001", number=9998).delete()
+    
+    client = APIClient()
+    client.credentials(HTTP_X_API_KEY=str(client_app.api_key))
+    
+    payload = {
+        "document_type": "01",
+        "series": "F001",
+        "number": 9999,
+        "customer_document_type": "6",
+        "customer_document": "20100070970",
+        "customer_name": "SUPERMERCADOS PERUANOS SA",
+        "total_amount": "118.00",
+        "currency": "PEN",
+        "details": [
+            {
+                "description": "Servicio de Consultoria MVP",
+                "quantity": 1,
+                "unit_price": 100.00
+            }
+        ]
+    }
+    
+    idempotency_key = "9c1d0e2f-1234-test"
+    url = "/api/documents/"
+    
+    # Mock SunatClient.send_bill response
+    mock_send_bill_response = {
+        "success": True,
+        "sunat_ticket": "CDR_RECEIVED",
+        "cdr_bytes": b"fake_cdr_zip",
+        "raw_response": "CDR ZIP data"
+    }
+    
+    # CASE 1: POST with new idempotency key
+    print("\n--- CASE 1: First request (creation) ---")
+    with patch("apps.sunat.services.client.SunatClient.send_bill") as mock_send:
+        mock_send.return_value = mock_send_bill_response
+        
+        response = client.post(url, payload, format="json", HTTP_X_IDEMPOTENCY_KEY=idempotency_key)
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json())
+        
+        assert response.status_code == 201
+        assert response.json()["idempotent"] is False
+        
+        doc_id = response.json()["id"]
+        doc = ElectronicDocument.objects.get(id=doc_id)
+        assert doc.idempotency_key == idempotency_key
+        assert doc.sunat_status == ElectronicDocument.SunatStatus.SENT
+        
+        # Verify send_bill was called exactly once
+        assert mock_send.call_count == 1
+        print("CASE 1 passed successfully!")
+
+    # CASE 2: POST with the same idempotency key
+    print("\n--- CASE 2: Duplicate request (idempotency hit) ---")
+    payload_dup = payload.copy()
+    payload_dup["number"] = 9998
+    
+    with patch("apps.sunat.services.client.SunatClient.send_bill") as mock_send:
+        mock_send.return_value = mock_send_bill_response
+        
+        response = client.post(url, payload_dup, format="json", HTTP_X_IDEMPOTENCY_KEY=idempotency_key)
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json())
+        
+        assert response.status_code == 200
+        assert response.json()["idempotent"] is True
+        assert response.json()["id"] == doc_id
+        
+        # Verify send_bill was NOT called
+        assert mock_send.call_count == 0
+        print("CASE 2 & 3 passed successfully! SUNAT was not invoked again.")
+
+    # CASE 4: Verify RequestLog registers IDEMPOTENCY_HIT
+    print("\n--- CASE 4: Verification of RequestLog ---")
+    hit_logs = RequestLog.objects.filter(
+        electronic_document_id=doc_id,
+        operation=RequestLog.Operation.IDEMPOTENCY_HIT
+    )
+    print(f"Number of IDEMPOTENCY_HIT logs found: {hit_logs.count()}")
+    assert hit_logs.count() == 1
+    hit_log = hit_logs.first()
+    assert hit_log.status == RequestLog.Status.SUCCESS
+    assert hit_log.request_payload["idempotency_key"] == idempotency_key
+    print("CASE 4 passed successfully!")
+
+    # Cleanup test documents and request logs
+    ElectronicDocument.objects.filter(company=company, series="F001", number=9999).delete()
+    ElectronicDocument.objects.filter(company=company, series="F001", number=9998).delete()
+    print("\nCleaned up test documents. Testing finished successfully!")
+
+if __name__ == "__main__":
+    test_idempotency_flow()

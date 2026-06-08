@@ -1,0 +1,1 @@
+"""Settings package — defaults to local. Override via DJANGO_SETTINGS_MODULE env var."""

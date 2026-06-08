@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    xmlns:soap11="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" 
+    xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+    xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" 
+    xmlns:wsp="http://www.w3.org/ns/ws-policy" 
+    xmlns:wsp200409="http://schemas.xmlsoap.org/ws/2004/09/policy" 
+    xmlns:wsp200607="http://www.w3.org/2006/07/ws-policy" 
+    xmlns:ns0="http://service.gem.factura.comppago.registro.servicio.sunat.gob.pe/" 
+    xmlns:ns1="http://service.sunat.gob.pe" 
+    targetNamespace="http://service.gem.factura.comppago.registro.servicio.sunat.gob.pe/">
+    
+    <wsdl:types>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+            xmlns:tns="http://service.sunat.gob.pe" 
+            targetNamespace="http://service.sunat.gob.pe" 
+            elementFormDefault="unqualified" 
+            version="1.0">
+            <xs:element name="getStatus" type="tns:getStatus"/>
+            <xs:element name="getStatusResponse" type="tns:getStatusResponse"/>
+            <xs:element name="sendBill" type="tns:sendBill"/>
+            <xs:element name="sendBillResponse" type="tns:sendBillResponse"/>
+            <xs:element name="sendPack" type="tns:sendPack"/>
+            <xs:element name="sendPackResponse" type="tns:sendPackResponse"/>
+            <xs:element name="sendSummary" type="tns:sendSummary"/>
+            <xs:element name="sendSummaryResponse" type="tns:sendSummaryResponse"/>
+            
+            <xs:complexType name="sendBill">
+                <xs:sequence>
+                    <xs:element name="fileName" type="xs:string" minOccurs="0"/>
+                    <xs:element name="contentFile" type="xs:base64Binary" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="sendBillResponse">
+                <xs:sequence>
+                    <xs:element name="applicationResponse" type="xs:base64Binary" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            
+            <xs:complexType name="sendSummary">
+                <xs:sequence>
+                    <xs:element name="fileName" type="xs:string" minOccurs="0"/>
+                    <xs:element name="contentFile" type="xs:base64Binary" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="sendSummaryResponse">
+                <xs:sequence>
+                    <xs:element name="ticket" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            
+            <xs:complexType name="getStatus">
+                <xs:sequence>
+                    <xs:element name="ticket" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="getStatusResponse">
+                <xs:sequence>
+                    <xs:element name="status" type="tns:statusResponse" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            
+            <xs:complexType name="sendPack">
+                <xs:sequence>
+                    <xs:element name="fileName" type="xs:string" minOccurs="0"/>
+                    <xs:element name="contentFile" type="xs:base64Binary" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="sendPackResponse">
+                <xs:sequence>
+                    <xs:element name="ticket" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            
+            <xs:complexType name="statusResponse">
+                <xs:sequence>
+                    <xs:element name="content" type="xs:base64Binary" minOccurs="0"/>
+                    <xs:element name="statusCode" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+    </wsdl:types>
+
+    <wsdl:message name="getStatus">
+        <wsdl:part name="parameters" element="ns1:getStatus"/>
+    </wsdl:message>
+    <wsdl:message name="getStatusResponse">
+        <wsdl:part name="parameters" element="ns1:getStatusResponse"/>
+    </wsdl:message>
+    <wsdl:message name="sendBill">
+        <wsdl:part name="parameters" element="ns1:sendBill"/>
+    </wsdl:message>
+    <wsdl:message name="sendBillResponse">
+        <wsdl:part name="parameters" element="ns1:sendBillResponse"/>
+    </wsdl:message>
+    <wsdl:message name="sendPack">
+        <wsdl:part name="parameters" element="ns1:sendPack"/>
+    </wsdl:message>
+    <wsdl:message name="sendPackResponse">
+        <wsdl:part name="parameters" element="ns1:sendPackResponse"/>
+    </wsdl:message>
+    <wsdl:message name="sendSummary">
+        <wsdl:part name="parameters" element="ns1:sendSummary"/>
+    </wsdl:message>
+    <wsdl:message name="sendSummaryResponse">
+        <wsdl:part name="parameters" element="ns1:sendSummaryResponse"/>
+    </wsdl:message>
+
+    <wsdl:portType name="billService">
+        <wsdl:operation name="getStatus">
+            <wsdl:input name="getStatusRequest" message="ns0:getStatus"/>
+            <wsdl:output name="getStatusResponse" message="ns0:getStatusResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="sendBill">
+            <wsdl:input name="sendBillRequest" message="ns0:sendBill"/>
+            <wsdl:output name="sendBillResponse" message="ns0:sendBillResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="sendPack">
+            <wsdl:input name="sendPackRequest" message="ns0:sendPack"/>
+            <wsdl:output name="sendPackResponse" message="ns0:sendPackResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="sendSummary">
+            <wsdl:input name="sendSummaryRequest" message="ns0:sendSummary"/>
+            <wsdl:output name="sendSummaryResponse" message="ns0:sendSummaryResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="BillServicePortBinding" type="ns0:billService">
+        <soap11:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="getStatus">
+            <soap11:operation soapAction="urn:getStatus" style="document"/>
+            <wsdl:input name="getStatusRequest">
+                <soap11:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="getStatusResponse">
+                <soap11:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="sendBill">
+            <soap11:operation soapAction="urn:sendBill" style="document"/>
+            <wsdl:input name="sendBillRequest">
+                <soap11:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="sendBillResponse">
+                <soap11:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="sendPack">
+            <soap11:operation soapAction="urn:sendPack" style="document"/>
+            <wsdl:input name="sendPackRequest">
+                <soap11:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="sendPackResponse">
+                <soap11:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="sendSummary">
+            <soap11:operation soapAction="urn:sendSummary" style="document"/>
+            <wsdl:input name="sendSummaryRequest">
+                <soap11:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="sendSummaryResponse">
+                <soap11:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="billService">
+        <wsdl:port name="BillServicePort" binding="ns0:BillServicePortBinding">
+            <soap11:address location="https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
