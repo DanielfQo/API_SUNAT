@@ -1,7 +1,7 @@
 """
-SUNAT integration API views — placeholder endpoints.
+Vistas de la API de integración con SUNAT — endpoints provisionales.
 
-These endpoints will be implemented when the SUNAT service layer is ready.
+Estos endpoints se implementarán cuando la capa del servicio SUNAT esté lista.
 """
 
 from rest_framework import status

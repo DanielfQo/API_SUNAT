@@ -13,7 +13,7 @@ class SunatClient:
     """
     Cliente SOAP para comunicarse con los servicios de SUNAT.
     """
-    # Endpoint BETA local file
+    # Endpoint BETA archivo local
     WSDL_PATH = os.path.join(os.path.dirname(__file__), "billService.wsdl")
 
     def __init__(self):
@@ -22,7 +22,7 @@ class SunatClient:
         self.password = "MODDATOS"
         
         session = requests.Session()
-        session.verify = False # Sometimes SUNAT BETA has SSL issues
+        session.verify = False # A veces SUNAT BETA tiene problemas de SSL
         session.auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         session.headers.update({
             'User-Agent': 'Mozilla/5.0'

@@ -1,14 +1,14 @@
 """
-Mock XML Generator for Electronic Documents.
-In a real implementation, this would use a library or template engine 
-to build a valid UBL (Universal Business Language) XML for SUNAT.
+Generador XML simulado para Documentos Electrónicos.
+En una implementación real, esto usaría una librería o motor de plantillas
+para construir un XML UBL (Universal Business Language) válido para SUNAT.
 """
 import os
 from decimal import Decimal
 from jinja2 import Environment, FileSystemLoader
 from apps.documents.models import ElectronicDocument
 
-# Path to the templates directory
+# Ruta al directorio de plantillas
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), '..', 'templates', 'ubl21')
 
 def num_to_words(number):
@@ -23,25 +23,25 @@ def num_to_words(number):
 
 def generate_fake_ubl(document: ElectronicDocument) -> str:
     """
-    Generates a valid UBL 2.1 XML representation of the document using Jinja2.
-    Calculates exact IGV and totals based on document.details.
+    Genera una representación XML UBL 2.1 válida del documento utilizando Jinja2.
+    Calcula el IGV exacto y los totales basándose en document.details.
     """
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR), autoescape=True)
     template = env.get_template('invoice.xml')
     
-    # Calculate totals
+    # Calcular totales
     total_gravadas = Decimal('0.00')
     details = document.details or []
     
     if not details:
-        # Fallback for old tests without details
+        # Alternativa para pruebas antiguas sin detalles
         details = [{
             "description": "Producto de prueba",
             "quantity": 1,
             "unit_price": float(document.total_amount) / 1.18
         }]
     
-    # Recalculate everything from details to be exact
+    # Recalcular todo a partir de los detalles para ser exactos
     processed_details = []
     for item in details:
         qty = Decimal(str(item.get('quantity', 1)))
@@ -56,7 +56,7 @@ def generate_fake_ubl(document: ElectronicDocument) -> str:
     total_igv = total_gravadas * Decimal('0.18')
     total_amount = total_gravadas + total_igv
     
-    # Format amount in words
+    # Formatear el monto en palabras
     total_amount_words = num_to_words(float(total_amount))
     
     context = {

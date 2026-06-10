@@ -43,6 +43,6 @@ class ClientAppViewSet(viewsets.ModelViewSet):
                     raise PermissionDenied("No tienes permiso para gestionar esta empresa.")
             serializer.save()
         else:
-            # Authenticated via API key
+            # Autenticado mediante API key
             company = self.request.auth["company"]
             serializer.save(company=company)

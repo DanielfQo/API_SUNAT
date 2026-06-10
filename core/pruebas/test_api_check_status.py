@@ -3,7 +3,7 @@ import sys
 import django
 from unittest.mock import patch
 
-# Setup Django environment
+# Configurar el entorno de Django
 sys.path.append("c:/Users/danie/OneDrive/Documentos/api_sunat/core")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
@@ -17,7 +17,7 @@ from apps.client_apps.models import ClientApp
 from apps.documents.models import ElectronicDocument
 
 def test_check_status_api():
-    # Setup mock company and app
+    # Configurar empresa y aplicación simuladas
     company, _ = Company.objects.get_or_create(
         ruc="20123456789",
         defaults={"business_name": "Empresa Test SAC"}
@@ -27,10 +27,10 @@ def test_check_status_api():
         name="Test App"
     )
     
-    # Delete preexisting test document to avoid IntegrityError on retry
+    # Eliminar documento de prueba preexistente para evitar IntegrityError al reintentar
     ElectronicDocument.objects.filter(company=company, series="F001", number=999).delete()
     
-    # Create a test document
+    # Crear un documento de prueba
     doc = ElectronicDocument.objects.create(
         company=company,
         document_type=ElectronicDocument.DocumentType.FACTURA,
@@ -53,7 +53,7 @@ def test_check_status_api():
             self.status = MockStatus(statusCode, content)
 
     client = APIClient()
-    # Add API Key authentication header
+    # Agregar cabecera de autenticación API Key
     client.credentials(HTTP_X_API_KEY=str(client_app.api_key))
     
     url = f"/api/documents/{doc.id}/check-status/"
@@ -67,30 +67,30 @@ def test_check_status_api():
         print("API Status Code:", response.status_code)
         print("API Response JSON:", response.json())
         
-        # Asserts
+        # Comprobaciones
         assert response.status_code == 200
         assert response.json()["status"] == "ACCEPTED"
         assert response.json()["sunat_response_code"] == "0"
         assert response.json()["sunat_description"] == "Aceptado"
         print("Assertion passed for ACCEPTED!")
         
-        # Verify CDR was saved in DB
+        # Verificar que el CDR se guardó en la base de datos
         doc.refresh_from_db()
         print("CDR ZIP Path in DB:", doc.cdr_zip_path)
         assert doc.cdr_zip_path != ""
-        # The path should now start with company folder name 'empresa_test_sac/cdr/'
+        # La ruta ahora debería comenzar con el nombre de la carpeta de la empresa 'empresa_test_sac/cdr/'
         assert doc.cdr_zip_path.startswith("empresa_test_sac/cdr/")
         assert doc.cdr_zip_path.endswith(".zip")
         print("Assertion passed for CDR saving in new storage structure!")
         
-        # Cleanup file from filesystem
+        # Limpiar archivo del sistema de archivos
         if doc.cdr_zip_path:
             abs_path = os.path.join(settings.MEDIA_ROOT, doc.cdr_zip_path)
             if os.path.exists(abs_path):
                 os.remove(abs_path)
                 print("Cleaned up CDR file from storage.")
 
-    # Cleanup
+    # Limpieza
     doc.delete()
     print("Cleaned up test document.")
 

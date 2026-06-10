@@ -28,7 +28,7 @@ class RequestLog(UUIDPrimaryKeyMixin, TimestampMixin):
         FAILED = "FAILED", "Fallido"
         PENDING = "PENDING", "Pendiente"
 
-    # Relationships
+    # Relaciones
     company = models.ForeignKey(
         "companies.Company",
         on_delete=models.CASCADE,
@@ -50,7 +50,7 @@ class RequestLog(UUIDPrimaryKeyMixin, TimestampMixin):
         help_text="Documento asociado (si aplica)",
     )
 
-    # Operation details
+    # Detalles de la operación
     operation = models.CharField(
         max_length=30,
         choices=Operation.choices,

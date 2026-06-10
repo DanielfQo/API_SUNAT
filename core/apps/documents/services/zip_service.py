@@ -1,13 +1,13 @@
 """
-Zip service for compressing XML files in memory.
+Servicio Zip para comprimir archivos XML en memoria.
 """
 import io
 import zipfile
 
 def compress_xml_to_zip(xml_content: str, xml_filename: str) -> bytes:
     """
-    Compresses an XML string into a ZIP archive in memory.
-    Returns the ZIP archive as bytes.
+    Comprime una cadena XML en un archivo ZIP en memoria.
+    Devuelve el archivo ZIP como bytes.
     """
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:

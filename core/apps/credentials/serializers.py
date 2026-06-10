@@ -6,8 +6,8 @@ from .models import SunatCredential
 
 
 class SunatCredentialSerializer(serializers.ModelSerializer):
-    """Read serializer — never exposes any encrypted fields."""
-
+    """Serializer de lectura — nunca expone ningún campo cifrado."""
+ 
     class Meta:
         model = SunatCredential
         fields = [
@@ -20,16 +20,16 @@ class SunatCredentialSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-
+ 
+ 
 class SunatCredentialWriteSerializer(serializers.ModelSerializer):
     """
-    Write serializer — accepts plain-text password/secret and encrypts them.
+    Serializer de escritura — acepta contraseña/secreto en texto plano y los cifra.
 
-    Fields sunat_password and client_secret are write_only:
-    they are never returned in responses.
+    Los campos sunat_password y client_secret son de solo escritura (write_only):
+    nunca se devuelven en las respuestas.
     """
-
+ 
     sunat_password = serializers.CharField(
         write_only=True,
         help_text="Contraseña SOL de SUNAT (se almacena cifrada)",
@@ -40,7 +40,7 @@ class SunatCredentialWriteSerializer(serializers.ModelSerializer):
         allow_blank=True,
         help_text="Client Secret OAuth SUNAT (se almacena cifrado)",
     )
-
+ 
     class Meta:
         model = SunatCredential
         fields = [
@@ -56,9 +56,9 @@ class SunatCredentialWriteSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-
+ 
     def _encrypt_fields(self, validated_data: dict) -> dict:
-        """Pop plain-text secrets, encrypt them, and set the _encrypted fields."""
+        """Extrae los secretos en texto plano, los cifra y establece los campos _encrypted."""
         plain_password = validated_data.pop("sunat_password", None)
         if plain_password:
             validated_data["sunat_password_encrypted"] = encrypt(plain_password)

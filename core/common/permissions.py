@@ -1,5 +1,5 @@
 """
-Custom permissions for sunat_gateway.
+Permisos personalizados para api_sunat.
 """
 
 from rest_framework.permissions import BasePermission
@@ -7,8 +7,8 @@ from rest_framework.permissions import BasePermission
 
 class HasValidApiKey(BasePermission):
     """
-    Grants access only if request was authenticated via ApiKeyAuthentication.
-    Ensures request.auth contains client_app and company.
+    Permite el acceso solo si la petición fue autenticada a través de ApiKeyAuthentication.
+    Garantiza que request.auth contenga client_app y company.
     """
 
     message = "Se requiere una API Key válida para acceder a este recurso."

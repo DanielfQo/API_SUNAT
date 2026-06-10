@@ -23,7 +23,7 @@ def generate_api_secret():
 
 
 class ClientApp(UUIDPrimaryKeyMixin, TimestampMixin):
-    """Aplicación que consume la API del gateway."""
+    """Aplicación que consume la API de api_sunat."""
 
     company = models.ForeignKey(
         "companies.Company",

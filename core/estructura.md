@@ -1,4 +1,4 @@
-# Estructura del Proyecto — API SUNAT Gateway
+# Estructura del Proyecto — API SUNAT
 
 ```
 core/                               ← Raíz del proyecto Django

@@ -28,7 +28,7 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
         REJECTED = "REJECTED", "Rechazado"
         ERROR = "ERROR", "Error"
 
-    # Relationships
+    # Relaciones
     company = models.ForeignKey(
         "companies.Company",
         on_delete=models.CASCADE,
@@ -36,7 +36,7 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
         help_text="Empresa emisora",
     )
 
-    # Document identification
+    # Identificación del documento
     document_type = models.CharField(
         max_length=2,
         choices=DocumentType.choices,
@@ -51,7 +51,7 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
         help_text="Número correlativo del comprobante",
     )
 
-    # Customer data
+    # Datos del cliente
     customer_document_type = models.CharField(
         max_length=2,
         blank=True,
@@ -69,7 +69,7 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
         help_text="Nombre o razón social del cliente",
     )
 
-    # Amounts
+    # Montos
     total_amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -85,7 +85,7 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
         help_text="Lista de ítems de la factura/boleta",
     )
 
-    # File paths (relative to MEDIA_ROOT)
+    # Rutas de archivos (relativas a MEDIA_ROOT)
     xml_path = models.CharField(
         max_length=500,
         blank=True,
@@ -105,7 +105,7 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
         help_text="Ruta del CDR (Constancia de Recepción)",
     )
 
-    # SUNAT response
+    # Respuesta de SUNAT
     hash = models.CharField(
         max_length=100,
         blank=True,
@@ -172,5 +172,5 @@ class ElectronicDocument(UUIDPrimaryKeyMixin, TimestampMixin):
 
     @property
     def full_number(self):
-        """Returns formatted document number: F001-00000001"""
+        """Devuelve el número de documento formateado: F001-00000001"""
         return f"{self.series}-{self.number:08d}"

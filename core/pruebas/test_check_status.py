@@ -3,7 +3,7 @@ import sys
 import django
 from unittest.mock import patch
 
-# Setup Django environment
+# Configurar el entorno de Django
 sys.path.append("c:/Users/danie/OneDrive/Documentos/api_sunat/core")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
@@ -15,7 +15,7 @@ from apps.requests_log.models import RequestLog
 from apps.documents.services.document_service import check_status
 
 def test_check_status_flow():
-    # Setup mock company and app
+    # Configurar empresa y aplicación simuladas
     company, _ = Company.objects.get_or_create(
         ruc="20123456789",
         defaults={"business_name": "Empresa Test SAC"}
@@ -25,7 +25,7 @@ def test_check_status_flow():
         name="Test App"
     )
     
-    # 1. Create a test document
+    # 1. Crear un documento de prueba
     doc = ElectronicDocument.objects.create(
         company=company,
         document_type=ElectronicDocument.DocumentType.FACTURA,
@@ -39,7 +39,7 @@ def test_check_status_flow():
     )
     print(f"Created test document with ID: {doc.id}, ticket: {doc.sunat_ticket}, status: {doc.sunat_status}")
 
-    # Mock responses
+    # Respuestas simuladas
     class MockStatus:
         def __init__(self, statusCode, content=None):
             self.statusCode = statusCode
@@ -49,7 +49,7 @@ def test_check_status_flow():
         def __init__(self, statusCode):
             self.status = MockStatus(statusCode)
 
-    # A. Test SUCCESS -> ACCEPTED (code "0")
+    # A. Probar ÉXITO -> ACEPTADO (código "0")
     print("\n--- Test A: statusCode '0' (ACCEPTED) ---")
     mock_resp_0 = MockResponse("0")
     with patch("apps.sunat.services.client.Client.service") as mock_service:
@@ -60,11 +60,11 @@ def test_check_status_flow():
         print(f"Mapped Response Code: {updated_doc.sunat_response_code}")
         print(f"Mapped Description: {updated_doc.sunat_description}")
         
-        # Verify log
+        # Verificar log
         last_log = RequestLog.objects.filter(electronic_document=updated_doc).first()
         print(f"RequestLog: operation={last_log.operation}, status={last_log.status}, error={last_log.error_message}")
 
-    # B. Test REJECTION -> REJECTED (code "99")
+    # B. Probar RECHAZO -> RECHAZADO (código "99")
     print("\n--- Test B: statusCode '99' (REJECTED) ---")
     mock_resp_99 = MockResponse("99")
     with patch("apps.sunat.services.client.Client.service") as mock_service:
@@ -75,7 +75,7 @@ def test_check_status_flow():
         print(f"Mapped Response Code: {updated_doc.sunat_response_code}")
         print(f"Mapped Description: {updated_doc.sunat_description}")
 
-    # C. Test IN PROCESS -> SENT (code "98")
+    # C. Probar EN PROCESO -> ENVIADO (código "98")
     print("\n--- Test C: statusCode '98' (SENT/En proceso) ---")
     mock_resp_98 = MockResponse("98")
     with patch("apps.sunat.services.client.Client.service") as mock_service:
@@ -86,7 +86,7 @@ def test_check_status_flow():
         print(f"Mapped Response Code: {updated_doc.sunat_response_code}")
         print(f"Mapped Description: {updated_doc.sunat_description}")
 
-    # D. Test EXCEPTION -> ERROR
+    # D. Probar EXCEPCIÓN -> ERROR
     from zeep.exceptions import Fault
     print("\n--- Test D: SOAP Fault (ERROR) ---")
     with patch("apps.sunat.services.client.Client.service") as mock_service:
@@ -97,11 +97,11 @@ def test_check_status_flow():
         print(f"Mapped Response Code: {updated_doc.sunat_response_code}")
         print(f"Mapped Description: {updated_doc.sunat_description}")
         
-        # Verify log
+        # Verificar log
         last_log = RequestLog.objects.filter(electronic_document=updated_doc).first()
         print(f"RequestLog: operation={last_log.operation}, status={last_log.status}, error={last_log.error_message}")
 
-    # Cleanup
+    # Limpieza
     doc.delete()
     print("\nCleaned up test document.")
 

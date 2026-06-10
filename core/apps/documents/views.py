@@ -69,7 +69,7 @@ class ElectronicDocumentViewSet(viewsets.ModelViewSet):
             traceback.print_exc()
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-        # Return id, status, and idempotent flag per specification
+        # Devuelve id, status y bandera idempotent según la especificación
         return Response({
             "id": document.id,
             "status": document.sunat_status,

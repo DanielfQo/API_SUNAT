@@ -4,7 +4,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: sunat_gateway
+      POSTGRES_DB: sunat_api
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:

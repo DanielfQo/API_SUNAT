@@ -1,7 +1,7 @@
 """
-SUNAT integration models.
+Modelos de integración con SUNAT.
 
-This app contains no models of its own — it acts as the integration layer
-between the gateway and SUNAT's web services. Future additions may include
-token caching or rate limit tracking.
+Esta aplicación no contiene modelos propios; actúa como la capa de integración
+entre api_sunat y los servicios web de la SUNAT. Las incorporaciones futuras pueden incluir
+el almacenamiento en caché de tokens o el seguimiento del límite de peticiones.
 """

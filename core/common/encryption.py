@@ -1,16 +1,16 @@
 """
-Fernet symmetric encryption utilities for sensitive fields.
+Utilidades de cifrado simétrico Fernet para campos sensibles.
 
-Used to encrypt/decrypt SUNAT credentials stored in the database.
-The key is read from settings.SUNAT_FERNET_KEY (set via .env).
+Utilizado para cifrar/descifrar las credenciales de SUNAT almacenadas en la base de datos.
+La clave se lee desde settings.SUNAT_FERNET_KEY (establecida a través de .env).
 
-Usage:
+Uso:
     from common.encryption import encrypt, decrypt
 
     encrypted = encrypt("my-plain-password")  # → "gAAA..."
     plain = decrypt(encrypted)               # → "my-plain-password"
 
-Key generation (run once):
+Generación de clave (ejecutar una vez):
     python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 """
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def _get_fernet() -> Fernet:
-    """Return a Fernet instance using the configured key."""
+    """Devuelve una instancia de Fernet utilizando la clave configurada."""
     key = getattr(settings, "SUNAT_FERNET_KEY", "")
     if not key:
         raise ValueError(
@@ -34,7 +34,7 @@ def _get_fernet() -> Fernet:
 
 
 def encrypt(plain_text: str) -> str:
-    """Encrypt a plain-text string. Returns a Fernet token (base64 string)."""
+    """Cifra una cadena de texto plano. Devuelve un token Fernet (cadena base64)."""
     if not plain_text:
         return ""
     fernet = _get_fernet()
@@ -42,7 +42,7 @@ def encrypt(plain_text: str) -> str:
 
 
 def decrypt(token: str) -> str:
-    """Decrypt a Fernet token. Returns the original plain-text string."""
+    """Descifra un token Fernet. Devuelve la cadena de texto plano original."""
     if not token:
         return ""
     try:

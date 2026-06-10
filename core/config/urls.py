@@ -4,16 +4,16 @@ from django.urls import include, path
 
 
 def health_check(request):
-    """Simple liveness probe."""
+    """Sencilla prueba de vida (liveness probe)."""
     return JsonResponse({"status": "ok", "service": "api_sunat"})
 
 
 urlpatterns = [
-    # Health / liveness
+    # Estado / Salud
     path("", health_check, name="health-check"),
-    # Admin
+    # Administración
     path("admin/", admin.site.urls),
-    # Core REST API
+    # API REST Principal
     path("api/companies/", include("apps.companies.urls")),
     path("api/client-apps/", include("apps.client_apps.urls")),
     path("api/credentials/", include("apps.credentials.urls")),

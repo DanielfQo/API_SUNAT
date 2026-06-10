@@ -16,11 +16,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party
+    # Terceros
     "rest_framework",
     "corsheaders",
     "django_filters",
-    # Local apps
+    # Aplicaciones locales
     "apps.companies",
     "apps.client_apps",
     "apps.credentials",
@@ -31,7 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # Must be before CommonMiddleware
+    "corsheaders.middleware.CorsMiddleware",  # Debe estar antes de CommonMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -61,12 +61,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # ---------------------------------------------------------------------------
-# Database — PostgreSQL (reads from .env)
+# Base de datos — PostgreSQL (lee de .env)
 # ---------------------------------------------------------------------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="sunat_gateway"),
+        "NAME": config("DB_NAME", default="api_sunat"),
         "USER": config("DB_USER", default="postgres"),
         "PASSWORD": config("DB_PASSWORD", default="postgres"),
         "HOST": config("DB_HOST", default="localhost"),
@@ -84,7 +84,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Media (XML, ZIP, CDR files)
+# Media (archivos XML, ZIP, CDR)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "storage"
 
@@ -118,6 +118,6 @@ CORS_ALLOWED_ORIGINS = config(
 )
 
 # ---------------------------------------------------------------------------
-# Fernet encryption key for SUNAT credentials
+# Clave de cifrado Fernet para credenciales de SUNAT
 # ---------------------------------------------------------------------------
 SUNAT_FERNET_KEY = config("SUNAT_FERNET_KEY", default="")

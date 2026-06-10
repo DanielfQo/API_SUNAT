@@ -23,15 +23,15 @@ from apps.sunat.services.client import SunatClient
 
 def get_company_dir_name(company) -> str:
     """
-    Returns a sanitized name of the company to use as a directory name.
-    If the business name becomes empty after sanitization, falls back to RUC.
+    Devuelve un nombre saneado de la empresa para usar como nombre de directorio.
+    Si la razón social queda vacía después de sanearla, recurre al RUC.
     """
     name = company.business_name
-    # Remove characters that aren't alphanumeric, spaces, hyphens, or underscores
+    # Eliminar caracteres que no sean alfanuméricos, espacios, guiones o guiones bajos
     cleaned = re.sub(r'[^\w\s-]', '', name).strip()
-    # Replace spaces/hyphens with underscores
+    # Reemplazar espacios/guiones por guiones bajos
     cleaned = re.sub(r'[\s-]+', '_', cleaned)
-    # Convert to lowercase
+    # Convertir a minúsculas
     cleaned = cleaned.lower()
     if not cleaned:
         return company.ruc

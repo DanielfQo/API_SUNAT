@@ -3,7 +3,7 @@ import sys
 import django
 import requests
 
-# Setup Django environment
+# Configurar el entorno de Django
 sys.path.append("c:/Users/danie/OneDrive/Documentos/api_sunat/core")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
@@ -30,10 +30,10 @@ def test_document(doc_type, series, number, customer_doc_type, customer_doc, cus
     
     api_key = client_app.api_key
     
-    # Delete preexisting test document to avoid IntegrityError
+    # Eliminar documento de prueba preexistente para evitar IntegrityError
     ElectronicDocument.objects.filter(company=company, series=series, number=number).delete()
     
-    # Payload
+    # Datos de la petición (Payload)
     payload = {
         "document_type": doc_type,
         "series": series,
@@ -58,10 +58,10 @@ def test_document(doc_type, series, number, customer_doc_type, customer_doc, cus
         "Content-Type": "application/json"
     }
     
-    # Send request
-    # Note: the Django dev server must be running at localhost:8000 for requests.post to work,
-    # or we can mock/call the view directly.
-    # To run without starting a dev server, we can use DRF's APIClient!
+    # Enviar petición
+    # Nota: el servidor de desarrollo de Django debe estar corriendo en localhost:8000 para que funcione requests.post,
+    # o podemos simular/llamar a la vista directamente.
+    # Para ejecutar sin iniciar un servidor de desarrollo, ¡podemos usar APIClient de DRF!
     from rest_framework.test import APIClient
     client = APIClient()
     client.credentials(HTTP_X_API_KEY=str(api_key))
@@ -80,7 +80,7 @@ def test_document(doc_type, series, number, customer_doc_type, customer_doc, cus
         print("ZIP Path in DB:", doc.zip_path)
         print("CDR Path in DB:", doc.cdr_zip_path)
         
-        # Verify that paths start with company name 'empresa_test_sac'
+        # Verificar que las rutas comiencen con el nombre de la empresa 'empresa_test_sac'
         assert doc.xml_path.startswith("empresa_test_sac/xml/")
         assert doc.zip_path.startswith("empresa_test_sac/zip/")
         if doc.cdr_zip_path:
@@ -88,7 +88,7 @@ def test_document(doc_type, series, number, customer_doc_type, customer_doc, cus
             
         print("OK: Verification of storage paths passed!")
         
-        # Cleanup files from storage to keep workspace clean
+        # Limpiar archivos del almacenamiento para mantener el espacio de trabajo limpio
         for path in [doc.xml_path, doc.zip_path, doc.cdr_zip_path]:
             if path:
                 abs_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -96,7 +96,7 @@ def test_document(doc_type, series, number, customer_doc_type, customer_doc, cus
                     os.remove(abs_path)
                     
         print("OK: Temporary storage files cleaned up!")
-        # Delete doc
+        # Eliminar documento
         doc.delete()
 
 if __name__ == "__main__":

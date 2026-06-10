@@ -5,12 +5,12 @@ from apps.client_apps.models import ClientApp
 from apps.credentials.models import SunatCredential
 
 class Command(BaseCommand):
-    help = "Seeds the database with superuser, test company, client app, and credentials for the MVP"
+    help = "Puebla la base de datos con un superusuario, una empresa de prueba, una aplicación cliente y credenciales para el MVP"
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.MIGRATE_HEADING("=== SEEDING DATABASE FOR SUNAT GATEWAY MVP ==="))
+        self.stdout.write(self.style.MIGRATE_HEADING("=== SEEDING DATABASE FOR API SUNAT MVP ==="))
 
-        # 1. Create Superuser
+        # 1. Crear Superusuario
         username = "admin"
         email = "admin@test.com"
         password = "admin123"
@@ -26,7 +26,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING(f"Superuser '{username}' already exists"))
 
-        # 2. Create Company
+        # 2. Crear Empresa
         ruc = "20123456789"
         business_name = "Empresa Test SAC"
         company, company_created = Company.objects.get_or_create(
@@ -36,12 +36,12 @@ class Command(BaseCommand):
         if company_created:
             self.stdout.write(self.style.SUCCESS(f"Created company '{business_name}' (RUC: {ruc}) owned by '{username}'"))
         else:
-            # Ensure owner is set even if company already exists
+            # Asegurar que el dueño está asignado incluso si la empresa ya existe
             company.owner = user
             company.save()
             self.stdout.write(self.style.WARNING(f"Company '{business_name}' already exists. Assigned owner '{username}'"))
 
-        # 3. Create ClientApp
+        # 3. Crear ClientApp
         app, app_created = ClientApp.objects.get_or_create(
             company=company,
             name="ERP Principal",
@@ -52,14 +52,14 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING(f"Client App '{app.name}' already exists"))
 
-        # Output keys
+        # Mostrar claves de salida
         self.stdout.write(self.style.SUCCESS("--------------------------------------------------"))
         self.stdout.write(self.style.SUCCESS("API AUTHENTICATION CREDENTIALS:"))
         self.stdout.write(self.style.SUCCESS(f"  X-API-Key:  {app.api_key}"))
         self.stdout.write(self.style.SUCCESS(f"  API Secret: {app.api_secret}"))
         self.stdout.write(self.style.SUCCESS("--------------------------------------------------"))
 
-        # 4. Create Sunat Credential (BETA)
+        # 4. Crear Credenciales SUNAT (BETA)
         cred, cred_created = SunatCredential.objects.get_or_create(
             company=company,
             defaults={

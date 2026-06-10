@@ -1,5 +1,5 @@
 """
-Shared model mixins for sunat_gateway.
+Mixins de modelos compartidos para api_sunat.
 """
 
 import uuid
@@ -8,7 +8,7 @@ from django.db import models
 
 
 class TimestampMixin(models.Model):
-    """Adds created_at and updated_at fields with automatic management."""
+    """Añade los campos created_at y updated_at con gestión automática."""
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -18,7 +18,7 @@ class TimestampMixin(models.Model):
 
 
 class UUIDPrimaryKeyMixin(models.Model):
-    """Uses UUID as primary key instead of auto-incrementing integer."""
+    """Usa UUID como clave primaria en lugar de un entero autoincrementable."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

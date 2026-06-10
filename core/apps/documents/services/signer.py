@@ -32,8 +32,8 @@ def sign_xml(xml_path: str, private_key, cert) -> str:
         
     root = etree.fromstring(xml_data)
     
-    # 1. Sign the root document (enveloped)
-    # Convert keys to PEM
+    # 1. Firmar el documento raíz (enveloped)
+    # Convertir claves a PEM
     priv_pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,

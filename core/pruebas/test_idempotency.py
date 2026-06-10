@@ -3,7 +3,7 @@ import sys
 import django
 from unittest.mock import patch
 
-# Setup Django environment
+# Configurar el entorno de Django
 sys.path.append("c:/Users/danie/OneDrive/Documentos/api_sunat/core")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
@@ -20,7 +20,7 @@ from apps.requests_log.models import RequestLog
 def test_idempotency_flow():
     print("\n=== Testing Document Idempotency Flow (Fase 7) ===")
     
-    # Setup company and client app
+    # Configurar empresa y aplicación cliente
     company, _ = Company.objects.get_or_create(
         ruc="20123456789",
         defaults={"business_name": "Empresa Test SAC"}
@@ -30,7 +30,7 @@ def test_idempotency_flow():
         name="Test App"
     )
     
-    # Ensure database is clean of our test documents
+    # Asegurar que la base de datos esté libre de nuestros documentos de prueba
     ElectronicDocument.objects.filter(company=company, series="F001", number=9999).delete()
     ElectronicDocument.objects.filter(company=company, series="F001", number=9998).delete()
     
@@ -58,7 +58,7 @@ def test_idempotency_flow():
     idempotency_key = "9c1d0e2f-1234-test"
     url = "/api/documents/"
     
-    # Mock SunatClient.send_bill response
+    # Simular la respuesta de SunatClient.send_bill
     mock_send_bill_response = {
         "success": True,
         "sunat_ticket": "CDR_RECEIVED",
@@ -66,8 +66,8 @@ def test_idempotency_flow():
         "raw_response": "CDR ZIP data"
     }
     
-    # CASE 1: POST with new idempotency key
-    print("\n--- CASE 1: First request (creation) ---")
+    # CASO 1: POST con nueva clave de idempotencia
+    print("\n--- CASO 1: Primera petición (creación) ---")
     with patch("apps.sunat.services.client.SunatClient.send_bill") as mock_send:
         mock_send.return_value = mock_send_bill_response
         
@@ -83,12 +83,12 @@ def test_idempotency_flow():
         assert doc.idempotency_key == idempotency_key
         assert doc.sunat_status == ElectronicDocument.SunatStatus.SENT
         
-        # Verify send_bill was called exactly once
+        # Verificar que send_bill fue llamado exactamente una vez
         assert mock_send.call_count == 1
         print("CASE 1 passed successfully!")
 
-    # CASE 2: POST with the same idempotency key
-    print("\n--- CASE 2: Duplicate request (idempotency hit) ---")
+    # CASO 2: POST con la misma clave de idempotencia
+    print("\n--- CASO 2: Petición duplicada (hit de idempotencia) ---")
     payload_dup = payload.copy()
     payload_dup["number"] = 9998
     
@@ -103,12 +103,12 @@ def test_idempotency_flow():
         assert response.json()["idempotent"] is True
         assert response.json()["id"] == doc_id
         
-        # Verify send_bill was NOT called
+        # Verificar que send_bill NO fue llamado
         assert mock_send.call_count == 0
         print("CASE 2 & 3 passed successfully! SUNAT was not invoked again.")
 
-    # CASE 4: Verify RequestLog registers IDEMPOTENCY_HIT
-    print("\n--- CASE 4: Verification of RequestLog ---")
+    # CASO 4: Verificar que RequestLog registre IDEMPOTENCY_HIT
+    print("\n--- CASO 4: Verificación de RequestLog ---")
     hit_logs = RequestLog.objects.filter(
         electronic_document_id=doc_id,
         operation=RequestLog.Operation.IDEMPOTENCY_HIT
@@ -120,7 +120,7 @@ def test_idempotency_flow():
     assert hit_log.request_payload["idempotency_key"] == idempotency_key
     print("CASE 4 passed successfully!")
 
-    # Cleanup test documents and request logs
+    # Limpiar documentos de prueba y logs de solicitudes
     ElectronicDocument.objects.filter(company=company, series="F001", number=9999).delete()
     ElectronicDocument.objects.filter(company=company, series="F001", number=9998).delete()
     print("\nCleaned up test documents. Testing finished successfully!")

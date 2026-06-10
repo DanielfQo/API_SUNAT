@@ -12,7 +12,7 @@ class RequestLogViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    """Read-only viewset for request logs (audit trail — no create/update/delete)."""
+    """ViewSet de solo lectura para logs de solicitudes (registro de auditoría — sin creación/actualización/eliminación)."""
 
     serializer_class = RequestLogSerializer
     lookup_field = "id"
