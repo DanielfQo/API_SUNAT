@@ -13,13 +13,74 @@ TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), '..', 'templates', 'ubl2
 
 def num_to_words(number):
     """
-    Función súper básica para MVP. 
-    En producción se usa una librería como num2words.
+    Convierte un número a letras en español para comprobantes electrónicos.
     """
-    # Para el MVP, si es 118, devolvemos "CIENTO DIECIOCHO CON 00/100"
+    UNIDADES = {
+        0: 'CERO', 1: 'UN', 2: 'DOS', 3: 'TRES', 4: 'CUATRO', 5: 'CINCO',
+        6: 'SEIS', 7: 'SIETE', 8: 'OCHO', 9: 'NUEVE', 10: 'DIEZ',
+        11: 'ONCE', 12: 'DOCE', 13: 'TRECE', 14: 'CATORCE', 15: 'QUINCE',
+        20: 'VEINTE', 30: 'TREINTA', 40: 'CUARENTA', 50: 'CINCUENTA',
+        60: 'SESENTA', 70: 'SETENTA', 80: 'OCHENTA', 90: 'NOVENTA',
+        100: 'CIEN'
+    }
+    
+    # Especiales de decenas
+    for i in range(16, 20):
+        UNIDADES[i] = 'DIECI' + UNIDADES[i - 10]
+    for i in range(21, 30):
+        UNIDADES[i] = 'VEINTI' + UNIDADES[i - 20]
+
+    def decenas(n):
+        if n in UNIDADES:
+            return UNIDADES[n]
+        d = (n // 10) * 10
+        u = n % 10
+        return f"{UNIDADES[d]} Y {UNIDADES[u]}"
+
+    def centenas(n):
+        if n == 100:
+            return 'CIEN'
+        if n < 100:
+            return decenas(n)
+        c = n // 100
+        resto = n % 100
+        if c == 1:
+            prefix = 'CIENTO'
+        elif c == 5:
+            prefix = 'QUINIENTOS'
+        elif c == 7:
+            prefix = 'SETECIENTOS'
+        elif c == 9:
+            prefix = 'NOVECIENTOS'
+        else:
+            prefix = UNIDADES[c] + 'CIENTOS'
+            
+        if resto == 0:
+            return prefix
+        return f"{prefix} {decenas(resto)}"
+
+    def miles(n):
+        if n < 1000:
+            return centenas(n)
+        m = n // 1000
+        resto = n % 1000
+        
+        prefix = 'MIL' if m == 1 else f"{centenas(m)} MIL"
+        if resto == 0:
+            return prefix
+        return f"{prefix} {centenas(resto)}"
+
+    # Convertir monto
     entero = int(number)
     decimal = int(round((number - entero) * 100))
-    return f"CIENTO DIECIOCHO CON {decimal:02d}/100"
+    
+    if entero == 0:
+        words = 'CERO'
+    else:
+        words = miles(entero)
+        
+    return f"{words} CON {decimal:02d}/100"
+
 
 def generate_fake_ubl(document: ElectronicDocument) -> str:
     """
