@@ -66,3 +66,23 @@ class ApiKeyAuthentication(BaseAuthentication):
 
     def authenticate_header(self, request):
         return "X-API-Key"
+
+
+# Configuración para drf-spectacular
+try:
+    from drf_spectacular.extensions import OpenApiAuthenticationExtension
+
+    class ApiKeyAuthenticationScheme(OpenApiAuthenticationExtension):
+        target_class = "common.authentication.ApiKeyAuthentication"
+        name = "ApiKeyAuth"
+
+        def get_security_definition(self, auto_schema):
+            return {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-Key",
+                "description": "Autenticación mediante cabecera X-API-Key para la API de SUNAT."
+            }
+except ImportError:
+    pass
+

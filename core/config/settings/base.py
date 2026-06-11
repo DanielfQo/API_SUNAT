@@ -6,7 +6,7 @@ from decouple import Csv, config
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-change-me-for-production")
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 
 INSTALLED_APPS = [
@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "django_filters",
+    "drf_spectacular",
     # Aplicaciones locales
     "apps.companies",
     "apps.client_apps",
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",  # Debe estar antes de CommonMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -81,8 +83,14 @@ TIME_ZONE = "America/Lima"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Media (archivos XML, ZIP, CDR)
 MEDIA_URL = "media/"
@@ -106,6 +114,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # ---------------------------------------------------------------------------
@@ -121,3 +130,13 @@ CORS_ALLOWED_ORIGINS = config(
 # Clave de cifrado Fernet para credenciales de SUNAT
 # ---------------------------------------------------------------------------
 SUNAT_FERNET_KEY = config("SUNAT_FERNET_KEY", default="")
+
+# ---------------------------------------------------------------------------
+# Configuración de drf-spectacular (OpenAPI / Swagger)
+# ---------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API SUNAT",
+    "DESCRIPTION": "Documentación interactiva de la API para el envío de comprobantes electrónicos a SUNAT.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
