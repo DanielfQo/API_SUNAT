@@ -40,6 +40,12 @@ class SunatCredentialWriteSerializer(serializers.ModelSerializer):
         allow_blank=True,
         help_text="Client Secret OAuth SUNAT (se almacena cifrado)",
     )
+    certificate_password = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        help_text="Contraseña del certificado digital (se almacena cifrada)",
+    )
  
     class Meta:
         model = SunatCredential
@@ -51,6 +57,7 @@ class SunatCredentialWriteSerializer(serializers.ModelSerializer):
             "client_id",
             "client_secret",
             "certificate",
+            "certificate_password",
             "environment",
             "created_at",
             "updated_at",
@@ -67,7 +74,12 @@ class SunatCredentialWriteSerializer(serializers.ModelSerializer):
         if plain_secret:
             validated_data["client_secret_encrypted"] = encrypt(plain_secret)
 
+        plain_cert_password = validated_data.pop("certificate_password", None)
+        if plain_cert_password:
+            validated_data["certificate_password_encrypted"] = encrypt(plain_cert_password)
+
         return validated_data
+
 
     def create(self, validated_data):
         validated_data = self._encrypt_fields(validated_data)

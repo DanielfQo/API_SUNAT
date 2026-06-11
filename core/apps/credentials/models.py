@@ -46,7 +46,13 @@ class SunatCredential(UUIDPrimaryKeyMixin, TimestampMixin):
         default="",
         help_text="Certificado digital en base64 (opcional)",
     )
+    certificate_password_encrypted = models.TextField(
+        blank=True,
+        default="",
+        help_text="Contraseña del certificado digital cifrada (opcional)",
+    )
     environment = models.CharField(
+
         max_length=20,
         choices=Environment.choices,
         default=Environment.BETA,

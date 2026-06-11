@@ -16,11 +16,26 @@ class SunatClient:
     # Endpoint BETA archivo local
     WSDL_PATH = os.path.join(os.path.dirname(__file__), "billService.wsdl")
 
-    def __init__(self):
-        # Credenciales fijas de prueba según requerimiento
-        self.username = "1076337562MODDATOS"
-        self.password = "MODDATOS"
+    def __init__(self, company):
+        if not company:
+            raise ValueError("Se requiere una empresa (Company) para inicializar el cliente de SUNAT.")
         
+        try:
+            credential = company.sunat_credential
+        except Exception:
+            raise ValueError(f"La empresa con RUC {company.ruc} no tiene credenciales de SUNAT configuradas en la base de datos.")
+            
+        from common.encryption import decrypt
+        
+        self.username = credential.sunat_user
+        if not self.username:
+            raise ValueError(f"El usuario SOL de SUNAT no está configurado para la empresa con RUC {company.ruc}.")
+            
+        try:
+            self.password = decrypt(credential.sunat_password_encrypted)
+        except Exception as e:
+            raise ValueError(f"No se pudo descifrar la contraseña SOL de SUNAT para la empresa con RUC {company.ruc}. Error: {e}")
+            
         session = requests.Session()
         session.verify = False # A veces SUNAT BETA tiene problemas de SSL
         session.auth = requests.auth.HTTPBasicAuth(self.username, self.password)
@@ -34,6 +49,7 @@ class SunatClient:
             wsse=UsernameToken(self.username, self.password),
             transport=transport
         )
+
 
     def send_bill(self, zip_bytes: bytes, filename: str) -> dict:
         """

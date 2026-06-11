@@ -130,6 +130,8 @@ CORS_ALLOWED_ORIGINS = config(
 # Clave de cifrado Fernet para credenciales de SUNAT
 # ---------------------------------------------------------------------------
 SUNAT_FERNET_KEY = config("SUNAT_FERNET_KEY", default="")
+SUNAT_CERTIFICATE_PASSWORD = config("SUNAT_CERTIFICATE_PASSWORD", default="123456")
+
 
 # ---------------------------------------------------------------------------
 # Configuración de drf-spectacular (OpenAPI / Swagger)

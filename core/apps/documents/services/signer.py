@@ -21,6 +21,17 @@ def load_certificate(pfx_path: str, password: str):
     
     return private_key, cert
 
+def load_certificate_from_bytes(pfx_data: bytes, password: str):
+    """
+    Carga los bytes del certificado PFX y extrae la llave privada y el certificado público.
+    """
+    private_key, cert, additional_certs = pkcs12.load_key_and_certificates(
+        pfx_data, 
+        password.encode('utf-8')
+    )
+    return private_key, cert
+
+
 def sign_xml(xml_path: str, private_key, cert) -> str:
     """
     Firma digitalmente el XML usando el certificado y llave privada.

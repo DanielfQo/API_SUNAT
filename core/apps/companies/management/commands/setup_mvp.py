@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from apps.companies.models import Company
 from apps.client_apps.models import ClientApp
 from apps.credentials.models import SunatCredential
+from common.encryption import encrypt, decrypt
 
 class Command(BaseCommand):
     help = "Puebla la base de datos con un superusuario, una empresa de prueba, una aplicación cliente y credenciales para el MVP"
@@ -60,17 +61,24 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("--------------------------------------------------"))
 
         # 4. Crear Credenciales SUNAT (BETA)
+        encrypted_pwd = encrypt("MODDATOS")
         cred, cred_created = SunatCredential.objects.get_or_create(
             company=company,
             defaults={
                 "sunat_user": "1076337562MODDATOS",
-                "sunat_password_encrypted": "MODDATOS",
+                "sunat_password_encrypted": encrypted_pwd,
                 "environment": SunatCredential.Environment.BETA
             }
         )
         if cred_created:
             self.stdout.write(self.style.SUCCESS(f"Created SUNAT Credentials for company {ruc} (Environment: BETA)"))
         else:
+            try:
+                decrypt(cred.sunat_password_encrypted)
+            except Exception:
+                cred.sunat_password_encrypted = encrypted_pwd
+                cred.save(update_fields=["sunat_password_encrypted"])
+                self.stdout.write(self.style.SUCCESS(f"Updated existing plaintext SUNAT Credentials for company {ruc} to encrypted format"))
             self.stdout.write(self.style.WARNING(f"SUNAT Credentials for company {ruc} already exists"))
 
         self.stdout.write(self.style.SUCCESS("=== SEEDING COMPLETED SUCCESSFULLY ==="))

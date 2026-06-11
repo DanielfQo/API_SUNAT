@@ -4,19 +4,21 @@ from apps.sunat.services.client import SunatClient
 
 logger = logging.getLogger(__name__)
 
-def get_status(ticket: str) -> dict:
+def get_status(company, ticket: str) -> dict:
     """
     Consulta el estado de un ticket de SUNAT utilizando el cliente SOAP existente.
     
     Args:
+        company: Instancia de la empresa (Company).
         ticket: El número de ticket de SUNAT (string).
         
     Returns:
         dict: Un diccionario de resultado con el estado de éxito, código de estado (status_code),
               contenido (bytes de la CDR) y detalles crudos de la solicitud/respuesta.
     """
-    logger.info(f"Querying SUNAT status for ticket: {ticket}")
-    sunat_client = SunatClient()
+    logger.info(f"Querying SUNAT status for ticket: {ticket} for company {company.ruc if company else 'None'}")
+    sunat_client = SunatClient(company)
+
     
     try:
         # Llamar a la operación SOAP 'getStatus' definida en el WSDL

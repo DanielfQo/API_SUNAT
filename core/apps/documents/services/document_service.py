@@ -3,6 +3,7 @@ Servicio de orquestación de documentos.
 Maneja el flujo completo de creación de un documento electrónico.
 """
 import hashlib
+import logging
 import os
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -17,9 +18,12 @@ from apps.sunat.services.status_checker import get_status
 from .xml_generator import generate_fake_ubl
 from .storage_service import save_file
 from .zip_service import create_zip
-from .signer import load_certificate, sign_xml
+from .signer import load_certificate, load_certificate_from_bytes, sign_xml
 import re
 from apps.sunat.services.client import SunatClient
+
+logger = logging.getLogger(__name__)
+
 
 def get_company_dir_name(company) -> str:
     """
@@ -111,8 +115,30 @@ def create_document(company: Company, client_app: ClientApp, data: dict, idempot
     
     # Paso 4: Firmar XML
     # Cargar certificado
-    cert_path = os.path.join(settings.BASE_DIR, 'certs', 'certificado.pfx')
-    private_key, cert = load_certificate(cert_path, "123456")
+    has_db_cert = False
+    if hasattr(company, 'sunat_credential') and company.sunat_credential:
+        cred = company.sunat_credential
+        if cred.certificate:
+            try:
+                import base64
+                cert_bytes = base64.b64decode(cred.certificate)
+                cert_password = "123456"
+                if hasattr(cred, 'certificate_password_encrypted') and cred.certificate_password_encrypted:
+                    from common.encryption import decrypt
+                    cert_password = decrypt(cred.certificate_password_encrypted)
+                else:
+                    cert_password = getattr(settings, "SUNAT_CERTIFICATE_PASSWORD", "123456")
+                
+                private_key, cert = load_certificate_from_bytes(cert_bytes, cert_password)
+                has_db_cert = True
+            except Exception as e:
+                logger.error(f"Error loading certificate from DB for company {company.ruc}: {e}. Falling back to local file.")
+
+    if not has_db_cert:
+        cert_path = os.path.join(settings.BASE_DIR, 'certs', 'certificado.pfx')
+        cert_password = getattr(settings, "SUNAT_CERTIFICATE_PASSWORD", "123456")
+        private_key, cert = load_certificate(cert_path, cert_password)
+        
     # Firmar (sobreescribe el archivo)
     sign_xml(xml_abs_path, private_key, cert)
     
@@ -134,7 +160,7 @@ def create_document(company: Company, client_app: ClientApp, data: dict, idempot
     document.save(update_fields=['xml_path', 'zip_path', 'hash', 'sunat_status', 'updated_at'])
     
     # Paso 7: Enviar a SUNAT
-    sunat_client = SunatClient()
+    sunat_client = SunatClient(company)
     result = sunat_client.send_bill(zip_content, zip_filename)
     
     # Paso 8: Registrar solicitud
@@ -185,7 +211,7 @@ def check_status(document_id: str) -> ElectronicDocument:
     ticket = document.sunat_ticket
     
     # Consultar SUNAT
-    result = get_status(ticket)
+    result = get_status(document.company, ticket)
     
     # Buscar client_app para el historial de auditoría de la solicitud
     previous_log = RequestLog.objects.filter(electronic_document=document, operation=RequestLog.Operation.SEND_INVOICE).first()
