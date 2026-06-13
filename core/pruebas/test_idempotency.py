@@ -16,11 +16,13 @@ from apps.companies.models import Company
 from apps.client_apps.models import ClientApp
 from apps.documents.models import ElectronicDocument
 from apps.requests_log.models import RequestLog
+from apps.credentials.models import SunatCredential
+from common.encryption import encrypt
 
 def test_idempotency_flow():
     print("\n=== Testing Document Idempotency Flow (Fase 7) ===")
     
-    # Configurar empresa y aplicación cliente
+    # Configurar empresa y aplicacion cliente
     company, _ = Company.objects.get_or_create(
         ruc="20123456789",
         defaults={"business_name": "Empresa Test SAC"}
@@ -30,9 +32,20 @@ def test_idempotency_flow():
         name="Test App"
     )
     
-    # Asegurar que la base de datos esté libre de nuestros documentos de prueba
+    # Configurar credenciales de SUNAT de prueba en la base de datos
+    SunatCredential.objects.get_or_create(
+        company=company,
+        defaults={
+            "sunat_user": "1076337562MODDATOS",
+            "sunat_password_encrypted": encrypt("MODDATOS"),
+            "environment": SunatCredential.Environment.BETA
+        }
+    )
+    
+    # Asegurar que la base de datos este libre de nuestros documentos de prueba
     ElectronicDocument.objects.filter(company=company, series="F001", number=9999).delete()
     ElectronicDocument.objects.filter(company=company, series="F001", number=9998).delete()
+
     
     client = APIClient()
     client.credentials(HTTP_X_API_KEY=str(client_app.api_key))
@@ -67,7 +80,7 @@ def test_idempotency_flow():
     }
     
     # CASO 1: POST con nueva clave de idempotencia
-    print("\n--- CASO 1: Primera petición (creación) ---")
+    print("\n--- CASO 1: Primera peticion (creacion) ---")
     with patch("apps.sunat.services.client.SunatClient.send_bill") as mock_send:
         mock_send.return_value = mock_send_bill_response
         
@@ -88,7 +101,7 @@ def test_idempotency_flow():
         print("CASE 1 passed successfully!")
 
     # CASO 2: POST con la misma clave de idempotencia
-    print("\n--- CASO 2: Petición duplicada (hit de idempotencia) ---")
+    print("\n--- CASO 2: Peticion duplicada (hit de idempotencia) ---")
     payload_dup = payload.copy()
     payload_dup["number"] = 9998
     
@@ -108,7 +121,7 @@ def test_idempotency_flow():
         print("CASE 2 & 3 passed successfully! SUNAT was not invoked again.")
 
     # CASO 4: Verificar que RequestLog registre IDEMPOTENCY_HIT
-    print("\n--- CASO 4: Verificación de RequestLog ---")
+    print("\n--- CASO 4: Verificacion de RequestLog ---")
     hit_logs = RequestLog.objects.filter(
         electronic_document_id=doc_id,
         operation=RequestLog.Operation.IDEMPOTENCY_HIT
