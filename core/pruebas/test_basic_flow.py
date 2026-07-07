@@ -4,8 +4,9 @@ import django
 import base64
 from unittest.mock import patch
 
-# 1. Configurar Django
-sys.path.append("c:/Users/danie/OneDrive/Documentos/api_sunat/core")
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
 from django.conf import settings
