@@ -1,26 +1,23 @@
 """
-Servicio de almacenamiento para guardar archivos en el sistema de archivos local.
+Servicio de almacenamiento para guardar archivos en el sistema de almacenamiento configurado (Local o S3).
 """
-import os
-from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 def save_file(company_dir: str, filename: str, content: bytes, folder: str) -> str:
     """
-    Guarda un archivo en la carpeta especificada dentro del directorio de la empresa.
-    Retorna la ruta relativa al archivo.
+    Guarda un archivo en la carpeta especificada dentro del directorio de la empresa usando default_storage.
+    Retorna la ruta relativa del archivo.
     """
-    # Construir ruta de directorio absoluta: MEDIA_ROOT / company_dir / folder
-    dir_path = os.path.join(settings.MEDIA_ROOT, company_dir, folder)
+    # Construir ruta relativa
+    relative_path = f"{company_dir}/{folder}/{filename}".replace('\\', '/')
     
-    # Crear directorios si no existen
-    os.makedirs(dir_path, exist_ok=True)
-    
-    # Ruta absoluta al archivo
-    file_path = os.path.join(dir_path, filename)
-    
-    # Guardar el archivo
-    with open(file_path, 'wb') as f:
-        f.write(content)
+    # Si el archivo ya existe, eliminarlo para evitar que Django agregue un sufijo aleatorio
+    if default_storage.exists(relative_path):
+        default_storage.delete(relative_path)
         
-    # Retorna la ruta relativa para persistencia en base de datos (ej., "company_dir/xml/20123456789-01-F001-1.xml")
-    return os.path.join(company_dir, folder, filename).replace('\\', '/')
+    # Guardar usando el storage por defecto
+    default_storage.save(relative_path, ContentFile(content))
+        
+    return relative_path
+

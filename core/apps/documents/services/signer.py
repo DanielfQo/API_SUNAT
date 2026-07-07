@@ -73,3 +73,37 @@ def sign_xml(xml_path: str, private_key, cert) -> str:
         f.write(signed_xml_data)
         
     return xml_path
+
+
+def sign_xml_bytes(xml_bytes: bytes, private_key, cert) -> bytes:
+    """
+    Firma digitalmente los bytes XML usando el certificado y llave privada.
+    Inserta la firma <ds:Signature> dentro del nodo <ext:ExtensionContent>.
+    Retorna los bytes del XML firmado.
+    """
+    root = etree.fromstring(xml_bytes)
+    
+    # Convertir claves a PEM
+    priv_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    cert_pem = cert.public_bytes(serialization.Encoding.PEM)
+    
+    signer = XMLSigner(
+        method=methods.enveloped, 
+        signature_algorithm='rsa-sha256', 
+        digest_algorithm='sha256',
+        c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
+    )
+    
+    signed_root = signer.sign(
+        root, 
+        key=priv_pem, 
+        cert=cert_pem,
+        exclude_c14n_transform_element=True
+    )
+    
+    return etree.tostring(signed_root, encoding='utf-8', xml_declaration=True)
+

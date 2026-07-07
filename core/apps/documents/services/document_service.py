@@ -17,8 +17,8 @@ from apps.sunat.services.status_checker import get_status
 
 from .xml_generator import generate_fake_ubl
 from .storage_service import save_file
-from .zip_service import create_zip
-from .signer import load_certificate, load_certificate_from_bytes, sign_xml
+from .zip_service import compress_xml_bytes
+from .signer import load_certificate, load_certificate_from_bytes, sign_xml_bytes
 import re
 from apps.sunat.services.client import SunatClient
 
@@ -106,15 +106,11 @@ def create_document(company: Company, client_app: ClientApp, data: dict, idempot
     xml_filename = f"{file_prefix}.xml"
     zip_filename = f"{file_prefix}.zip"
 
-    # Paso 2: Generar XML
+    # Paso 2: Generar XML en memoria
     xml_content = generate_fake_ubl(document)
+    xml_bytes = xml_content.encode('utf-8')
     
-    # Paso 3: Guardar XML (temporalmente sin firmar, o directamente firmado)
-    xml_rel_path = save_file(company_dir, xml_filename, xml_content.encode('utf-8'), 'xml')
-    xml_abs_path = os.path.join(settings.MEDIA_ROOT, xml_rel_path)
-    
-    # Paso 4: Firmar XML
-    # Cargar certificado
+    # Paso 3: Cargar certificado
     has_db_cert = False
     if hasattr(company, 'sunat_credential') and company.sunat_credential:
         cred = company.sunat_credential
@@ -139,17 +135,17 @@ def create_document(company: Company, client_app: ClientApp, data: dict, idempot
         cert_password = getattr(settings, "SUNAT_CERTIFICATE_PASSWORD", "123456")
         private_key, cert = load_certificate(cert_path, cert_password)
         
-    # Firmar (sobreescribe el archivo)
-    sign_xml(xml_abs_path, private_key, cert)
+    # Paso 4: Firmar XML en memoria
+    signed_xml_bytes = sign_xml_bytes(xml_bytes, private_key, cert)
     
-    # Paso 5: Comprimir XML firmado
-    zip_content = create_zip(xml_abs_path)
+    # Paso 5: Generar hash del XML firmado
+    document_hash = hashlib.sha256(signed_xml_bytes).hexdigest()
     
-    # Generar hash a partir del ZIP final o XML firmado
-    with open(xml_abs_path, 'rb') as f:
-        document_hash = hashlib.sha256(f.read()).hexdigest()
+    # Paso 6: Comprimir XML firmado en memoria
+    zip_content = compress_xml_bytes(signed_xml_bytes, xml_filename)
 
-    # Paso 6: Guardar ZIP
+    # Paso 7: Guardar XML y ZIP en el almacenamiento (local o S3)
+    xml_rel_path = save_file(company_dir, xml_filename, signed_xml_bytes, 'xml')
     zip_rel_path = save_file(company_dir, zip_filename, zip_content, 'zip')
     
     # Actualizar estado a SIGNED antes de enviar (si algo falla, quedará como SIGNED)

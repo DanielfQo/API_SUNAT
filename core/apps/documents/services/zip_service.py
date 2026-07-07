@@ -33,3 +33,17 @@ def create_zip(xml_signed_path: str) -> bytes:
         zip_file.writestr(filename, xml_data)
         
     return zip_buffer.getvalue()
+
+
+def compress_xml_bytes(xml_bytes: bytes, xml_filename: str) -> bytes:
+    """
+    Comprime bytes de XML en un archivo ZIP en memoria.
+    Devuelve el archivo ZIP como bytes.
+    """
+    import io
+    import zipfile
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr(xml_filename, xml_bytes)
+    return zip_buffer.getvalue()
+
